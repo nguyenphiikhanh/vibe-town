@@ -16,8 +16,8 @@
 
 # Package Files #
 *.jar
-!/client/*.jar
-!/server/*.jar
+!/Client/*.jar
+!/Server/*.jar
 *.war
 *.nar
 *.ear
@@ -37,3 +37,14 @@ replay_pid*
 .vscode
 .DS_Store
 .mariadb_data
+
+# Web applications
+**/node_modules/
+**/.next/
+**/dist/
+**/build/
+**/coverage/
+**/*.tsbuildinfo
+**/.env
+**/.env.*
+!**/.env.example

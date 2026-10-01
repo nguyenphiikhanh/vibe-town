@@ -1,5 +1,57 @@
 Source Server Game Avatar 2D là bộ mã nguồn máy chủ game online được xây dựng bằng Java Socket kết hợp MySQL, phù hợp cho người muốn nghiên cứu, phát triển hoặc vận hành server game Avatar 2D riêng. Source đã có sẵn cấu trúc server, database mẫu, dữ liệu vật phẩm, NPC, shop, tài nguyên hình ảnh HD/Medium và file .jar có thể chạy trực tiếp.
 
+## Web game: Phố Nhỏ Avatar
+
+Project hiện có thêm hai ứng dụng tách biệt:
+
+- `Client/`: Next.js client tiếng Việt cho thị trấn kinh doanh, dùng sprite cửa hàng Avatar trong `res/hd/object/` và sprite nông sản trong `res/hd/bigFarm/`.
+- `Server/`: Elysia API cho đăng nhập, kinh tế/cửa hàng và tài nguyên; Colyseus room cho vòng lặp nông trại; MySQL cho dữ liệu người chơi.
+- `Server/drizzle/`: schema Drizzle và migration cho nông trại, số dư thị trấn, cửa hàng và hàng tồn kho; dữ liệu gắn với tài khoản trong bảng `users` hiện có.
+
+Vòng lặp Phố Nhỏ hiện gồm nhập hàng → phục vụ khách → nhận xu/thiện cảm → mở thêm cửa tiệm. Khu nông trại gieo trồng/thu hoạch vẫn được giữ làm nền cho các tính năng phát triển tiếp theo.
+
+### Chạy bản web cục bộ
+
+1. Cài Node.js 22+ và npm. Khởi động MariaDB từ cấu hình hiện tại:
+
+   ```bash
+   docker compose up -d mariadb
+   ```
+
+2. Import `database/avatar.sql` vào database `avatar` nếu đây là database mới, sau đó áp dụng migration bằng Drizzle:
+
+   ```bash
+   docker compose exec -T mariadb mariadb -uroot avatar < database/avatar.sql
+   ```
+
+3. Tạo file `Server/.env` từ `Server/.env.example`. Đặt `DATABASE_URL` theo MariaDB của bạn và thay `JWT_SECRET` bằng chuỗi ngẫu nhiên đủ dài. `RESOURCE_ROOT=res` trỏ đến tài nguyên ở thư mục gốc. Cài dependency, rồi chạy migration từ thư mục `Server`:
+
+   ```bash
+   cd Server
+   npm install
+   npm run db:migrate
+   ```
+
+   Schema ở `Server/src/db/schema.ts`; migration được lưu trong `Server/drizzle/`. Khi cập nhật schema, tạo migration mới bằng `npm run db:generate`. `users` là bảng legacy chỉ tham chiếu khóa ngoại, không được tạo lại.
+
+4. Chạy server:
+
+   ```bash
+   npm run dev
+   ```
+
+5. Tạo `Client/.env.local` từ `Client/.env.example`, rồi cài dependency và chạy client ở terminal khác:
+
+   ```bash
+   cd Client
+   npm install
+   npm run dev
+   ```
+
+6. Mở `http://localhost:3000` và đăng nhập bằng tài khoản Avatar đang hoạt động trong database. Web game không thay đổi hash mật khẩu MD5 của client Java cũ.
+
+Server API chạy ở `http://localhost:3001`; Colyseus dùng cổng `2567`. Cấu hình CORS mặc định chỉ cho phép client ở `http://localhost:3000`.
+
 Bộ source phù hợp cho lập trình viên, chủ server game hoặc người đang tìm hiểu cách xây dựng hệ thống game online dạng socket thời gian thực. Source có cấu trúc rõ ràng, dễ chỉnh sửa cấu hình port, database, thông báo server, tên thành phố và tài nguyên game.
 
 ---
@@ -8,7 +60,7 @@ Bộ source phù hợp cho lập trình viên, chủ server game hoặc người
 
 ### Hệ thống server
 - Server Java Socket chạy qua port cấu hình, mặc định: `19128`.
-- Có file chạy sẵn: `avatar-server.jar`.
+- Có file chạy sẵn: `Server/avatar-server.jar`.
 - Có class main: `avatar.server.Avatar`.
 - Tự động nhận kết nối client qua `ServerSocket`.
 - Hỗ trợ xử lý session người chơi, gửi/nhận message theo command.
@@ -99,7 +151,10 @@ Bộ source phù hợp cho lập trình viên, chủ server game hoặc người
 
 ```text
 FULLSOURCEAVATAR/
-├── avatar-server.jar
+├── Client/
+│   └── Avatar2_127.0.0.1_19128.jar
+├── Server/
+│   └── avatar-server.jar
 ├── config.properties
 ├── database.properties
 ├── avatar.conf
@@ -221,17 +276,17 @@ cd FULLSOURCEAVATAR
 
 Chạy bằng file jar có sẵn:
 ```bash
-java -jar avatar-server.jar
+java -jar Server/avatar-server.jar
 ```
 
 Khuyến nghị chạy với RAM giới hạn:
 ```bash
-java -Xms512m -Xmx2g -jar avatar-server.jar
+java -Xms512m -Xmx2g -jar Server/avatar-server.jar
 ```
 
 Chạy nền trên Linux:
 ```bash
-nohup java -Xms512m -Xmx2g -jar avatar-server.jar > logs/server.out 2>&1 &
+nohup java -Xms512m -Xmx2g -jar Server/avatar-server.jar > logs/server.out 2>&1 &
 ```
 
 Nếu chạy thành công sẽ thấy log dạng:
@@ -259,4 +314,4 @@ Source có `pom.xml`, có thể mở bằng IntelliJ IDEA, NetBeans hoặc VS Co
 mvn clean package
 ```
 
-> **Lưu ý**: `pom.xml` hiện chưa có plugin tạo fat jar đầy đủ. File chạy sẵn `avatar-server.jar` ở thư mục gốc đã bao gồm dependency. Nếu build lại bằng Maven mặc định, jar trong `target/` có thể chưa chạy độc lập nếu thiếu thư viện.
+> **Lưu ý**: `pom.xml` hiện chưa có plugin tạo fat jar đầy đủ. File chạy sẵn `Server/avatar-server.jar` đã bao gồm dependency. Nếu build lại bằng Maven mặc định, jar trong `target/` có thể chưa chạy độc lập nếu thiếu thư viện.

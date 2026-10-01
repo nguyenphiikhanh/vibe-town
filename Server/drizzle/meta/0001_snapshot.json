@@ -1,0 +1,92 @@
+{
+  "version": "5",
+  "dialect": "mysql",
+  "id": "d6ac9b41-73d1-4bd7-a1e2-0b98a4aaf784",
+  "prevId": "c6562112-1670-42d3-bbe5-c01bf45f5961",
+  "tables": {
+    "farm_inventory": {
+      "name": "farm_inventory",
+      "columns": {
+        "user_id": { "name": "user_id", "type": "int", "primaryKey": false, "notNull": true, "autoincrement": false },
+        "crop_id": { "name": "crop_id", "type": "varchar(32)", "primaryKey": false, "notNull": true, "autoincrement": false },
+        "seeds": { "name": "seeds", "type": "int unsigned", "primaryKey": false, "notNull": true, "autoincrement": false, "default": 0 },
+        "harvested": { "name": "harvested", "type": "int unsigned", "primaryKey": false, "notNull": true, "autoincrement": false, "default": 0 }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "farm_inventory_user_id_users_id_fk": { "name": "farm_inventory_user_id_users_id_fk", "tableFrom": "farm_inventory", "tableTo": "users", "columnsFrom": ["user_id"], "columnsTo": ["id"], "onDelete": "cascade", "onUpdate": "no action" }
+      },
+      "compositePrimaryKeys": { "farm_inventory_user_id_crop_id_pk": { "name": "farm_inventory_user_id_crop_id_pk", "columns": ["user_id", "crop_id"] } },
+      "uniqueConstraints": {}, "checkConstraint": {}
+    },
+    "farm_plots": {
+      "name": "farm_plots",
+      "columns": {
+        "user_id": { "name": "user_id", "type": "int", "primaryKey": false, "notNull": true, "autoincrement": false },
+        "plot_index": { "name": "plot_index", "type": "smallint unsigned", "primaryKey": false, "notNull": true, "autoincrement": false },
+        "crop_id": { "name": "crop_id", "type": "varchar(32)", "primaryKey": false, "notNull": false, "autoincrement": false },
+        "planted_at": { "name": "planted_at", "type": "bigint", "primaryKey": false, "notNull": false, "autoincrement": false },
+        "ready_at": { "name": "ready_at", "type": "bigint", "primaryKey": false, "notNull": false, "autoincrement": false }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "farm_plots_user_id_users_id_fk": { "name": "farm_plots_user_id_users_id_fk", "tableFrom": "farm_plots", "tableTo": "users", "columnsFrom": ["user_id"], "columnsTo": ["id"], "onDelete": "cascade", "onUpdate": "no action" }
+      },
+      "compositePrimaryKeys": { "farm_plots_user_id_plot_index_pk": { "name": "farm_plots_user_id_plot_index_pk", "columns": ["user_id", "plot_index"] } },
+      "uniqueConstraints": {}, "checkConstraint": {}
+    },
+    "town_businesses": {
+      "name": "town_businesses",
+      "columns": {
+        "user_id": { "name": "user_id", "type": "int", "primaryKey": false, "notNull": true, "autoincrement": false },
+        "shop_id": { "name": "shop_id", "type": "varchar(32)", "primaryKey": false, "notNull": true, "autoincrement": false },
+        "level": { "name": "level", "type": "smallint unsigned", "primaryKey": false, "notNull": true, "autoincrement": false, "default": 1 }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "town_businesses_user_id_users_id_fk": { "name": "town_businesses_user_id_users_id_fk", "tableFrom": "town_businesses", "tableTo": "users", "columnsFrom": ["user_id"], "columnsTo": ["id"], "onDelete": "cascade", "onUpdate": "no action" }
+      },
+      "compositePrimaryKeys": { "town_businesses_user_id_shop_id_pk": { "name": "town_businesses_user_id_shop_id_pk", "columns": ["user_id", "shop_id"] } },
+      "uniqueConstraints": {}, "checkConstraint": {}
+    },
+    "town_economy": {
+      "name": "town_economy",
+      "columns": {
+        "user_id": { "name": "user_id", "type": "int", "primaryKey": false, "notNull": true, "autoincrement": false },
+        "coins": { "name": "coins", "type": "int unsigned", "primaryKey": false, "notNull": true, "autoincrement": false, "default": 500 },
+        "reputation": { "name": "reputation", "type": "smallint unsigned", "primaryKey": false, "notNull": true, "autoincrement": false, "default": 0 },
+        "total_sales": { "name": "total_sales", "type": "int unsigned", "primaryKey": false, "notNull": true, "autoincrement": false, "default": 0 }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "town_economy_user_id_users_id_fk": { "name": "town_economy_user_id_users_id_fk", "tableFrom": "town_economy", "tableTo": "users", "columnsFrom": ["user_id"], "columnsTo": ["id"], "onDelete": "cascade", "onUpdate": "no action" }
+      },
+      "compositePrimaryKeys": { "town_economy_user_id_pk": { "name": "town_economy_user_id_pk", "columns": ["user_id"] } },
+      "uniqueConstraints": {}, "checkConstraint": {}
+    },
+    "town_inventory": {
+      "name": "town_inventory",
+      "columns": {
+        "user_id": { "name": "user_id", "type": "int", "primaryKey": false, "notNull": true, "autoincrement": false },
+        "product_id": { "name": "product_id", "type": "varchar(32)", "primaryKey": false, "notNull": true, "autoincrement": false },
+        "stock": { "name": "stock", "type": "int unsigned", "primaryKey": false, "notNull": true, "autoincrement": false, "default": 0 }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "town_inventory_user_id_users_id_fk": { "name": "town_inventory_user_id_users_id_fk", "tableFrom": "town_inventory", "tableTo": "users", "columnsFrom": ["user_id"], "columnsTo": ["id"], "onDelete": "cascade", "onUpdate": "no action" }
+      },
+      "compositePrimaryKeys": { "town_inventory_user_id_product_id_pk": { "name": "town_inventory_user_id_product_id_pk", "columns": ["user_id", "product_id"] } },
+      "uniqueConstraints": {}, "checkConstraint": {}
+    },
+    "users": {
+      "name": "users",
+      "columns": { "id": { "name": "id", "type": "int", "primaryKey": false, "notNull": true, "autoincrement": true } },
+      "indexes": {}, "foreignKeys": {},
+      "compositePrimaryKeys": { "users_id": { "name": "users_id", "columns": ["id"] } },
+      "uniqueConstraints": {}, "checkConstraint": {}
+    }
+  },
+  "views": {},
+  "_meta": { "schemas": {}, "tables": {}, "columns": {} },
+  "internal": { "tables": {}, "indexes": {} }
+}

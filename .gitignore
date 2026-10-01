@@ -36,3 +36,4 @@ replay_pid*
 .idea
 .vscode
 .DS_Store
+.mariadb_data

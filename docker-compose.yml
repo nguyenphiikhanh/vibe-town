@@ -1,0 +1,85 @@
+services:
+  # ------------------------------------------
+  # 1. DATABASE: MariaDB 10 (LTS)
+  # ------------------------------------------
+  mariadb:
+    image: mariadb:10.11
+    container_name: avatar-mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: avatar
+      TZ: Asia/Ho_Chi_Minh
+    command: [
+      '--character-set-server=utf8mb4',
+      '--collation-server=utf8mb4_unicode_ci',
+      '--innodb-buffer-pool-size=256M' # Tối ưu RAM cho VPS nhỏ
+    ]
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./.mariadb_data:/var/lib/mysql
+    networks:
+      - avatar-bridge
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ------------------------------------------
+  # 2. PHPMYADMIN: Giao diện web quản lý DB
+  # ------------------------------------------
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: avatar-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      PMA_HOST: mariadb
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ""
+      PMA_ARBITRARY: 0
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "8080:80" # Truy cập phpMyAdmin qua http://IP:8080
+    networks:
+      - avatar-bridge
+
+  # ------------------------------------------
+  # 3. GAME SERVER: Avatar Java 21
+  # ------------------------------------------
+  avatar-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: avatar-server
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    ports:
+      - "19128:19128" # Port kết nối game
+    volumes:
+      # Mount cấu hình và tài nguyên từ máy host vào container
+      - ./config.properties:/app/config.properties:ro
+      - ./database.properties:/app/database.properties:ro
+      - ./res:/app/res:ro
+      - ./logs:/app/logs
+    networks:
+      - avatar-bridge
+
+# ------------------------------------------
+# VOLUMES & NETWORKS
+# ------------------------------------------
+volumes:
+  mariadb_data:
+    driver: local
+
+networks:
+  avatar-bridge:
+    driver: bridge
